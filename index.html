@@ -11,9 +11,6 @@
     --blue:#2563eb; --blue-dark:#1d4ed8; --blue-light:#eff6ff;
     --slate-50:#f8fafc; --slate-100:#f1f5f9; --slate-200:#e2e8f0; --slate-300:#cbd5e1;
     --slate-400:#94a3b8; --slate-500:#64748b; --slate-600:#475569; --slate-700:#334155; --slate-800:#1e293b;
-    --amber-50:#fffbeb; --amber-100:#fef3c7; --amber-200:#fde68a; --amber-400:#fbbf24; --amber-500:#f59e0b; --amber-600:#d97706; --amber-700:#b45309; --amber-900:#78350f;
-    --purple-50:#faf5ff; --purple-100:#f3e8ff; --purple-200:#e9d5ff; --purple-900:#581c87;
-    --emerald-50:#ecfdf5; --emerald-100:#d1fae5; --emerald-200:#a7f3d0; --emerald-500:#10b981; --emerald-700:#047857; --emerald-800:#065f46;
     --red-50:#fef2f2; --red-500:#ef4444; --red-600:#dc2626;
   }
   *{box-sizing:border-box;}
@@ -29,13 +26,18 @@
   }
   @media(min-width:640px){ header{ flex-direction:row; } }
   header h1{ font-size:1.1rem; font-weight:700; margin:0; }
-  .btn-add{
-    background:#fff; color:var(--blue); padding:10px 16px; border-radius:10px; font-weight:700;
-    box-shadow:0 1px 2px rgba(0,0,0,.1); border:none; cursor:pointer; width:100%; font-size:.9rem;
+  .header-actions{ display:flex; gap:8px; width:100%; }
+  @media(min-width:640px){ .header-actions{ width:auto; } }
+  .btn-add, .btn-manage{
+    padding:10px 16px; border-radius:10px; font-weight:700;
+    box-shadow:0 1px 2px rgba(0,0,0,.1); border:none; cursor:pointer; font-size:.9rem; flex:1;
   }
-  @media(min-width:640px){ .btn-add{ width:auto; } }
+  @media(min-width:640px){ .btn-add, .btn-manage{ flex:none; } }
+  .btn-add{ background:#fff; color:var(--blue); }
   .btn-add:hover{ background:var(--blue-light); }
-  .btn-add:active{ transform:scale(.97); }
+  .btn-manage{ background:rgba(255,255,255,.15); color:#fff; }
+  .btn-manage:hover{ background:rgba(255,255,255,.25); }
+  .btn-add:active, .btn-manage:active{ transform:scale(.97); }
 
   .filterbar{
     background:#fff; padding:14px 16px; box-shadow:0 1px 2px rgba(0,0,0,.05); border-bottom:1px solid var(--slate-200);
@@ -70,35 +72,29 @@
     background:var(--slate-300); color:var(--slate-700); font-size:.7rem; padding:2px 8px;
     border-radius:999px; font-weight:700;
   }
-  .count.contract{ background:var(--emerald-200); color:var(--emerald-800); }
+  .count.contract{ background:#a7f3d0; color:#065f46; }
   .kanban-list{ flex:1; overflow-y:auto; min-height:150px; display:flex; flex-direction:column; gap:8px; }
 
   .card{
-    border:1px solid; padding:12px; border-radius:12px; box-shadow:0 1px 2px rgba(0,0,0,.05);
-    cursor:grab; position:relative; transition:box-shadow .15s;
+    border:1px solid var(--slate-200); background:var(--slate-50); padding:12px; border-radius:12px;
+    box-shadow:0 1px 2px rgba(0,0,0,.05); cursor:grab; position:relative; transition:box-shadow .15s;
   }
   .card:hover{ box-shadow:0 4px 8px rgba(0,0,0,.08); }
   .card:active{ cursor:grabbing; }
   .card.ghost{ opacity:.4; background:var(--slate-200); }
   .card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:6px; }
   .card-name{ font-weight:700; color:var(--slate-800); font-size:.875rem; word-break:break-word; }
-  .card-badge{ font-size:.65rem; padding:2px 6px; border-radius:6px; font-weight:700; flex-shrink:0; white-space:nowrap; }
+  .card-badges{ display:flex; flex-wrap:wrap; gap:3px; flex-shrink:0; justify-content:flex-end; }
+  .card-badge{ font-size:.63rem; padding:2px 6px; border-radius:6px; font-weight:700; white-space:nowrap; }
   .card-notes{
-    font-size:.75rem; color:var(--slate-500); margin:4px 0 0; overflow:hidden;
+    font-size:.75rem; color:var(--slate-500); margin:6px 0 0; overflow:hidden;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
   }
   .date-tags{ display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
   .date-tag{ font-size:.62rem; font-weight:700; padding:2px 5px; border-radius:5px; border:1px solid; }
-
-  .cat-pudding{ background:var(--amber-50); border-color:var(--amber-200); }
-  .cat-star{ background:var(--purple-50); border-color:var(--purple-200); }
-  .cat-other{ background:var(--slate-50); border-color:var(--slate-200); }
-  .badge-pudding{ background:var(--amber-100); color:var(--amber-900); }
-  .badge-star{ background:var(--purple-100); color:var(--purple-900); }
-  .badge-other{ background:var(--slate-200); color:var(--slate-800); }
-  .tag-recall{ color:var(--amber-700); background:var(--amber-50); border-color:var(--amber-200); }
+  .tag-recall{ color:#b45309; background:#fffbeb; border-color:#fde68a; }
   .tag-visit{ color:var(--blue-dark); background:rgba(255,255,255,.9); border-color:#bfdbfe; }
-  .tag-contract{ color:var(--emerald-700); background:var(--emerald-50); border-color:var(--emerald-200); }
+  .tag-contract{ color:#047857; background:#ecfdf5; border-color:#a7f3d0; }
 
   .calendar-panel{
     width:100%; background:#fff; padding:16px; border-radius:14px; box-shadow:0 1px 2px rgba(0,0,0,.05);
@@ -109,7 +105,7 @@
   .legend{ display:flex; flex-wrap:wrap; gap:10px 12px; font-size:.65rem; margin-bottom:12px; color:var(--slate-500); }
   .legend span{ display:flex; align-items:center; gap:4px; }
   .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
-  .dot-amber{ background:var(--amber-400); } .dot-blue{ background:var(--blue); } .dot-emerald{ background:var(--emerald-500); }
+  .dot-amber{ background:#fbbf24; } .dot-blue{ background:var(--blue); } .dot-emerald{ background:#10b981; }
   .cal-head{
     display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:.72rem;
     font-weight:700; color:var(--slate-500); margin-bottom:8px; border-bottom:1px solid var(--slate-200); padding-bottom:4px;
@@ -123,8 +119,8 @@
   .cal-num{ font-weight:700; color:var(--slate-400); font-size:.62rem; display:block; margin-bottom:2px; }
   .cal-events{ display:flex; flex-direction:column; gap:2px; overflow-y:auto; flex:1; max-height:50px; }
   .cal-badge{ font-size:.58rem; padding:1px 3px; border-radius:4px; font-weight:700; cursor:pointer; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .bg-amber400{ background:var(--amber-400); } .bg-amber500{ background:var(--amber-500); border:1px solid var(--amber-600); }
-  .bg-blue500{ background:var(--blue); } .bg-emerald500{ background:var(--emerald-500); }
+  .bg-amber400{ background:#fbbf24; } .bg-amber500{ background:#f59e0b; border:1px solid #d97706; }
+  .bg-blue500{ background:var(--blue); } .bg-emerald500{ background:#10b981; }
 
   footer{ background:var(--slate-800); color:var(--slate-400); text-align:center; padding:12px; font-size:.72rem; flex-shrink:0; }
 
@@ -137,6 +133,7 @@
     background:#fff; border-radius:18px; width:100%; max-width:420px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,.25);
     max-height:90vh; overflow-y:auto;
   }
+  .modal-box.wide{ max-width:480px; }
   .modal-box h3{ font-size:1.2rem; font-weight:700; border-bottom:1px solid var(--slate-200); padding-bottom:12px; margin:0 0 16px; color:var(--slate-800); }
   .field{ margin-bottom:14px; }
   .field label{ display:block; font-size:.72rem; font-weight:700; color:var(--slate-500); margin-bottom:4px; }
@@ -161,10 +158,57 @@
   .btn-save:hover{ background:var(--blue-dark); }
   .btn-save:disabled{ opacity:.6; cursor:not-allowed; }
 
+  /* カテゴリー複数選択（チェックボックス風チップ） */
+  .cat-multiselect{ display:flex; flex-wrap:wrap; gap:8px; }
+  .cat-option{
+    display:flex; align-items:center; gap:6px; padding:7px 12px; border-radius:10px; cursor:pointer;
+    border:1.5px solid var(--slate-200); background:var(--slate-50); font-size:.8rem; font-weight:600;
+    color:var(--slate-600); user-select:none; transition:all .12s;
+  }
+  .cat-option input{ display:none; }
+  .cat-option .swatch{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .cat-option.selected{ border-color:currentColor; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+  .cat-empty-note{ font-size:.75rem; color:var(--slate-400); }
+
+  /* カテゴリー管理モーダル */
+  .cat-manage-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; max-height:260px; overflow-y:auto; }
+  .cat-manage-row{
+    display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--slate-200);
+    border-radius:10px; background:var(--slate-50);
+  }
+  .cat-manage-row .swatch{ width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+  .cat-manage-row .emoji{ font-size:1rem; width:22px; text-align:center; }
+  .cat-manage-row .name{ flex:1; font-size:.85rem; font-weight:600; color:var(--slate-700); }
+  .cat-manage-row .usage{ font-size:.65rem; color:var(--slate-400); }
+  .cat-del-btn{
+    background:none; border:none; color:var(--slate-400); cursor:pointer; font-size:1rem; padding:2px 6px;
+    border-radius:6px; line-height:1;
+  }
+  .cat-del-btn:hover{ background:var(--red-50); color:var(--red-600); }
+  .cat-add-form{ border-top:1px solid var(--slate-200); padding-top:14px; display:flex; flex-direction:column; gap:10px; }
+  .cat-add-row{ display:flex; gap:8px; }
+  .cat-add-row input[type=text]{
+    flex:1; border:1px solid var(--slate-300); border-radius:10px; padding:8px 10px; font-size:.85rem;
+    outline:none; background:var(--slate-50);
+  }
+  .cat-add-row input[type=text]:focus{ background:#fff; border-color:var(--blue); }
+  .emoji-input{ width:54px; text-align:center; flex:none !important; }
+  .color-swatches{ display:flex; gap:6px; flex-wrap:wrap; }
+  .color-dot{
+    width:24px; height:24px; border-radius:50%; cursor:pointer; border:2px solid transparent;
+  }
+  .color-dot.selected{ border-color:var(--slate-700); box-shadow:0 0 0 2px #fff inset; }
+  .btn-cat-add{
+    background:var(--blue); color:#fff; border:none; padding:9px 14px; border-radius:10px; font-weight:700;
+    font-size:.82rem; cursor:pointer; align-self:flex-start;
+  }
+  .btn-cat-add:hover{ background:var(--blue-dark); }
+  .btn-cat-add:disabled{ opacity:.5; cursor:not-allowed; }
+
   .toast{
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--slate-800); color:#fff;
     padding:10px 18px; border-radius:10px; font-size:.8rem; z-index:100; box-shadow:0 4px 12px rgba(0,0,0,.3);
-    opacity:0; transition:opacity .25s; pointer-events:none;
+    opacity:0; transition:opacity .25s; pointer-events:none; max-width:90vw; text-align:center;
   }
   .toast.show{ opacity:1; }
   .toast.error{ background:var(--red-600); }
@@ -176,15 +220,16 @@
 
 <header>
   <h1>📝 小野田の営業日報 ＆ 活動管理</h1>
-  <button class="btn-add" id="btnAdd" type="button">+ 取引先を追加</button>
+  <div class="header-actions">
+    <button class="btn-manage" id="btnManageCats" type="button">⚙️ カテゴリー管理</button>
+    <button class="btn-add" id="btnAdd" type="button">+ 取引先を追加</button>
+  </div>
 </header>
 
-<div class="filterbar">
+<div class="filterbar" id="filterbar">
   <span class="label">案件で絞り込み:</span>
   <button class="chip active" data-filter="ALL" type="button">すべて表示</button>
-  <button class="chip" data-filter="pudding" type="button">🍮 ウェルカムプリン</button>
-  <button class="chip" data-filter="star" type="button">✨ 星空鑑賞会</button>
-  <button class="chip" data-filter="other" type="button">📁 その他</button>
+  <!-- カテゴリーのチップはJSで動的に生成 -->
 </div>
 
 <div class="layout">
@@ -223,6 +268,7 @@
 
 <footer>&copy; 2026 株式会社MONDOCOLO All Rights Reserved.</footer>
 
+<!-- 取引先 追加/編集 モーダル -->
 <div class="modal-overlay hidden" id="modal">
   <div class="modal-box">
     <h3 id="modalTitle">取引先詳細</h3>
@@ -233,13 +279,10 @@
       <label>取引先名</label>
       <input type="text" id="editName" placeholder="例：道の駅○○">
     </div>
+
     <div class="field">
-      <label>案件カテゴリー</label>
-      <select id="editCategory">
-        <option value="pudding">🍮 ウェルカムプリン導入案件</option>
-        <option value="star">✨ 星空鑑賞会案件</option>
-        <option value="other">📁 その他</option>
-      </select>
+      <label>案件カテゴリー（複数選択可）</label>
+      <div class="cat-multiselect" id="catMultiSelect"></div>
     </div>
 
     <div class="section-title">🗓 各種活動日・予定の記録</div>
@@ -276,6 +319,34 @@
   </div>
 </div>
 
+<!-- カテゴリー管理 モーダル -->
+<div class="modal-overlay hidden" id="catModal">
+  <div class="modal-box wide">
+    <h3>⚙️ カテゴリー管理</h3>
+
+    <div class="cat-manage-list" id="catManageList"></div>
+
+    <div class="cat-add-form">
+      <div class="field" style="margin-bottom:0;">
+        <label>新しいカテゴリーを追加</label>
+        <div class="cat-add-row">
+          <input type="text" id="newCatEmoji" class="emoji-input" placeholder="絵文字" maxlength="4" value="📁">
+          <input type="text" id="newCatLabel" placeholder="カテゴリー名（例：道の駅催事）" maxlength="20">
+        </div>
+      </div>
+      <div>
+        <label style="display:block;font-size:.72rem;font-weight:700;color:var(--slate-500);margin-bottom:6px;">色を選ぶ</label>
+        <div class="color-swatches" id="colorSwatches"></div>
+      </div>
+      <button class="btn-cat-add" id="btnAddCategory" type="button">＋ カテゴリーを追加</button>
+    </div>
+
+    <div class="modal-footer" style="justify-content:flex-end;">
+      <button class="btn btn-cancel" id="btnCatModalClose" type="button">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -288,22 +359,37 @@
   let supabase = null;
   let supabaseReady = false;
 
-  // appData は常に最初に初期化する。Supabase が使えなくても画面は必ず動く。
   let appData = { cards: [] };
-  let currentFilter = 'ALL';
+  let categoryList = []; // [{id,key,label,emoji,color,sort_order}]
+  let currentFilter = 'ALL'; // 'ALL' または カテゴリーkey
 
-  const catConfig = {
-    pudding: { label: 'プリン', cardClass: 'cat-pudding', badgeClass: 'badge-pudding' },
-    star:    { label: '星空',   cardClass: 'cat-star',    badgeClass: 'badge-star' },
-    other:   { label: 'その他', cardClass: 'cat-other',   badgeClass: 'badge-other' }
-  };
+  const COLOR_PALETTE = [
+    { name:'amber',   bg:'#fffbeb', border:'#fde68a', badgeBg:'#fef3c7', badgeText:'#78350f', dot:'#f59e0b' },
+    { name:'purple',  bg:'#faf5ff', border:'#e9d5ff', badgeBg:'#f3e8ff', badgeText:'#581c87', dot:'#a855f7' },
+    { name:'slate',   bg:'#f8fafc', border:'#e2e8f0', badgeBg:'#e2e8f0', badgeText:'#1e293b', dot:'#64748b' },
+    { name:'rose',    bg:'#fff1f2', border:'#fecdd3', badgeBg:'#ffe4e6', badgeText:'#9f1239', dot:'#f43f5e' },
+    { name:'sky',     bg:'#f0f9ff', border:'#bae6fd', badgeBg:'#e0f2fe', badgeText:'#075985', dot:'#0ea5e9' },
+    { name:'green',   bg:'#f0fdf4', border:'#bbf7d0', badgeBg:'#dcfce7', badgeText:'#166534', dot:'#22c55e' },
+    { name:'orange',  bg:'#fff7ed', border:'#fed7aa', badgeBg:'#ffedd5', badgeText:'#9a3412', dot:'#f97316' },
+    { name:'indigo',  bg:'#eef2ff', border:'#c7d2fe', badgeBg:'#e0e7ff', badgeText:'#3730a3', dot:'#6366f1' }
+  ];
+  let selectedNewCatColor = COLOR_PALETTE[0].name;
+
+  function colorOf(name){ return COLOR_PALETTE.find(c => c.name === name) || COLOR_PALETTE[2]; }
+  function catByKey(key){ return categoryList.find(c => c.key === key); }
+
+  const DEFAULT_CATEGORIES = [
+    { id:'cat_pudding', key:'pudding', label:'ウェルカムプリン', emoji:'🍮', color:'amber', sort_order:1 },
+    { id:'cat_star',    key:'star',    label:'星空鑑賞会',       emoji:'✨', color:'purple', sort_order:2 },
+    { id:'cat_other',   key:'other',   label:'その他',           emoji:'📁', color:'slate', sort_order:3 }
+  ];
 
   function showToast(msg, isError){
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.className = 'toast show' + (isError ? ' error' : '');
     clearTimeout(t._timer);
-    t._timer = setTimeout(()=>{ t.className = 'toast' + (isError?' error':''); }, 2600);
+    t._timer = setTimeout(()=>{ t.className = 'toast' + (isError?' error':''); }, 2800);
   }
 
   function tryInitSupabase(){
@@ -320,16 +406,45 @@
     }
   }
 
-  // ---- ローカル保存（Supabase 不通時のフォールバック） ----
+  // ---- ローカル保存フォールバック ----
   const LOCAL_KEY = 'onoda_sales_cards_fallback';
-  function loadLocal(){
-    try {
-      const raw = localStorage.getItem(LOCAL_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch(e){ return []; }
+  const LOCAL_CAT_KEY = 'onoda_sales_categories_fallback';
+  function loadLocalCards(){
+    try { const raw = localStorage.getItem(LOCAL_KEY); return raw ? JSON.parse(raw) : []; }
+    catch(e){ return []; }
   }
-  function saveLocal(cards){
+  function saveLocalCards(cards){
     try { localStorage.setItem(LOCAL_KEY, JSON.stringify(cards)); } catch(e){}
+  }
+  function loadLocalCategories(){
+    try {
+      const raw = localStorage.getItem(LOCAL_CAT_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return (parsed && parsed.length) ? parsed : DEFAULT_CATEGORIES.slice();
+    } catch(e){ return DEFAULT_CATEGORIES.slice(); }
+  }
+  function saveLocalCategories(cats){
+    try { localStorage.setItem(LOCAL_CAT_KEY, JSON.stringify(cats)); } catch(e){}
+  }
+
+  // ---- データ取得 ----
+  async function fetchCategoriesFromServer(){
+    if (supabaseReady){
+      try {
+        const { data, error } = await supabase.from('sales_categories').select('*').order('sort_order', { ascending: true });
+        if (error) throw error;
+        if (data && data.length){
+          categoryList = data.map(d => ({ id:d.id, key:d.key, label:d.label, emoji:d.emoji, color:d.color, sort_order:d.sort_order }));
+          return;
+        }
+        categoryList = DEFAULT_CATEGORIES.slice();
+      } catch(e){
+        console.error('カテゴリー取得エラー。ローカル/デフォルトを使用します。', e);
+        categoryList = loadLocalCategories();
+      }
+    } else {
+      categoryList = loadLocalCategories();
+    }
   }
 
   async function fetchCardsFromServer(){
@@ -337,22 +452,41 @@
       try {
         const { data, error } = await supabase.from('sales_cards').select('*').order('created_at', { ascending: true });
         if (error) throw error;
-        appData.cards = (data || []).map(item => ({
-          id: item.id, name: item.name, status: item.status, category: item.category,
-          teleapoDate: item.teleapo_date, nextTeleapoDate: item.next_teleapo_date,
-          nextDate: item.next_date, contractDate: item.contract_date, notes: item.notes
-        }));
+        appData.cards = (data || []).map(item => normalizeCard(item));
       } catch(e){
         console.error('Supabase 取得エラー。ローカルデータで表示します。', e);
         showToast('サーバーに接続できません。ローカルの保存データを表示しています。', true);
-        appData.cards = loadLocal();
+        appData.cards = loadLocalCards();
       }
     } else {
-      appData.cards = loadLocal();
+      appData.cards = loadLocalCards();
     }
+  }
+
+  function normalizeCard(item){
+    // categories配列があれば優先、無ければ旧category(単一)から移行
+    let cats = item.categories;
+    if (!cats || !Array.isArray(cats) || cats.length === 0){
+      cats = item.category ? [item.category] : [];
+    }
+    return {
+      id: item.id, name: item.name, status: item.status, categories: cats,
+      teleapoDate: item.teleapoDate !== undefined ? item.teleapoDate : item.teleapo_date,
+      nextTeleapoDate: item.nextTeleapoDate !== undefined ? item.nextTeleapoDate : item.next_teleapo_date,
+      nextDate: item.nextDate !== undefined ? item.nextDate : item.next_date,
+      contractDate: item.contractDate !== undefined ? item.contractDate : item.contract_date,
+      notes: item.notes
+    };
+  }
+
+  async function refreshAll(){
+    await Promise.all([fetchCategoriesFromServer(), fetchCardsFromServer()]);
+    renderFilterChips();
+    renderCatMultiSelect();
     renderBoard();
   }
 
+  // ---- 永続化（カード） ----
   async function persistInsert(serverData){
     if (supabaseReady){
       const { error } = await supabase.from('sales_cards').insert([serverData]);
@@ -378,22 +512,59 @@
     return false;
   }
 
-  // ---- フィルター ----
-  function setupFilters(){
-    document.querySelectorAll('.chip').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentFilter = btn.getAttribute('data-filter');
-        document.querySelectorAll('.chip').forEach(b => b.classList.toggle('active', b === btn));
-        renderBoard();
-      });
-    });
+  // ---- 永続化（カテゴリー） ----
+  async function persistCategoryInsert(cat){
+    if (supabaseReady){
+      const { error } = await supabase.from('sales_categories').insert([cat]);
+      if (error) { console.error(error); showToast('サーバーへのカテゴリー保存に失敗しました（ローカルに保存します）', true); return false; }
+      return true;
+    }
+    return false;
+  }
+  async function persistCategoryDelete(id){
+    if (supabaseReady){
+      const { error } = await supabase.from('sales_categories').delete().eq('id', id);
+      if (error) { console.error(error); showToast('サーバーでのカテゴリー削除に失敗しました', true); return false; }
+      return true;
+    }
+    return false;
   }
 
-  // ---- 描画 ----
+  // ---- フィルターチップ（カテゴリーに応じて動的生成） ----
+  function renderFilterChips(){
+    const bar = document.getElementById('filterbar');
+    bar.querySelectorAll('.chip[data-dynamic]').forEach(el => el.remove());
+
+    categoryList.forEach(cat => {
+      const col = colorOf(cat.color);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip' + (currentFilter === cat.key ? ' active' : '');
+      btn.setAttribute('data-filter', cat.key);
+      btn.setAttribute('data-dynamic', '1');
+      btn.textContent = `${cat.emoji} ${cat.label}`;
+      if (currentFilter === cat.key){ btn.style.background = col.dot; btn.style.color = '#fff'; }
+      btn.addEventListener('click', () => {
+        currentFilter = cat.key;
+        renderFilterChips();
+        renderBoard();
+      });
+      bar.appendChild(btn);
+    });
+
+    const allBtn = bar.querySelector('.chip[data-filter="ALL"]');
+    allBtn.className = 'chip' + (currentFilter === 'ALL' ? ' active' : '');
+    allBtn.style.background = currentFilter === 'ALL' ? '' : '';
+    allBtn.onclick = () => { currentFilter = 'ALL'; renderFilterChips(); renderBoard(); };
+  }
+
+  // ---- カード描画 ----
   function renderBoard(){
     const lists = { teleapo: [], visit: [], proposal: [], contract: [] };
     appData.cards.forEach(card => {
-      if (lists[card.status] && (currentFilter === 'ALL' || card.category === currentFilter)) {
+      const cats = card.categories || [];
+      const matchesFilter = currentFilter === 'ALL' || cats.includes(currentFilter);
+      if (lists[card.status] && matchesFilter) {
         lists[card.status].push(card);
       }
     });
@@ -408,11 +579,19 @@
         listEl.appendChild(hint);
       }
       lists[status].forEach(card => {
-        const cfg = catConfig[card.category] || catConfig.other;
         const cardEl = document.createElement('div');
-        cardEl.className = 'card ' + cfg.cardClass;
+        const cats = (card.categories || []).map(k => catByKey(k)).filter(Boolean);
+        const primaryColor = cats.length ? colorOf(cats[0].color) : colorOf('slate');
+        cardEl.className = 'card';
+        cardEl.style.background = primaryColor.bg;
+        cardEl.style.borderColor = primaryColor.border;
         cardEl.setAttribute('data-id', card.id);
         cardEl.addEventListener('click', () => openEditModal(card.id));
+
+        const badges = cats.map(c => {
+          const col = colorOf(c.color);
+          return `<span class="card-badge" style="background:${col.badgeBg};color:${col.badgeText};">${escapeHtml(c.emoji)} ${escapeHtml(c.label)}</span>`;
+        }).join('');
 
         let dateBadges = '';
         if (card.nextTeleapoDate) dateBadges += `<span class="date-tag tag-recall">📞 再電: ${escapeHtml(card.nextTeleapoDate)}</span>`;
@@ -422,7 +601,7 @@
         cardEl.innerHTML =
           `<div class="card-top">
              <div class="card-name">${escapeHtml(card.name)}</div>
-             <span class="card-badge ${cfg.badgeClass}">${cfg.label}</span>
+             <div class="card-badges">${badges || '<span class="card-badge" style="background:#e2e8f0;color:#1e293b;">未分類</span>'}</div>
            </div>
            <p class="card-notes">${escapeHtml(card.notes || 'メモなし')}</p>
            <div class="date-tags">${dateBadges}</div>`;
@@ -462,7 +641,7 @@
               updateData.contract_date = card.contractDate;
             }
             const ok = await persistUpdate(card.id, updateData);
-            if (!ok) saveLocal(appData.cards);
+            if (!ok) saveLocalCards(appData.cards);
             renderBoard();
           }
         }
@@ -480,10 +659,7 @@
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    for (let i = 0; i < firstDay; i++) {
-      const blank = document.createElement('div');
-      grid.appendChild(blank);
-    }
+    for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
 
     for (let day = 1; day <= daysInMonth; day++) {
       const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -498,7 +674,8 @@
       eventsBox.className = 'cal-events';
 
       appData.cards.forEach(c => {
-        if (currentFilter !== 'ALL' && c.category !== currentFilter) return;
+        const cats = c.categories || [];
+        if (currentFilter !== 'ALL' && !cats.includes(currentFilter)) return;
         if (c.teleapoDate === dayStr) createBadge(eventsBox, `📞 ${c.name}`, 'bg-amber400', c.id);
         if (c.nextTeleapoDate === dayStr) createBadge(eventsBox, `📞[再]${c.name}`, 'bg-amber500', c.id);
         if (c.nextDate === dayStr) createBadge(eventsBox, `📅 ${c.name}`, 'bg-blue500', c.id);
@@ -519,19 +696,49 @@
     container.appendChild(item);
   }
 
-  // ---- モーダル ----
-  function openModal(){
-    document.getElementById('modal').classList.remove('hidden');
+  // ---- カテゴリー複数選択UI（取引先モーダル内） ----
+  let selectedCategories = new Set();
+
+  function renderCatMultiSelect(){
+    const wrap = document.getElementById('catMultiSelect');
+    wrap.innerHTML = '';
+    if (categoryList.length === 0){
+      wrap.innerHTML = '<span class="cat-empty-note">カテゴリーがまだありません。「⚙️ カテゴリー管理」から追加してください。</span>';
+      return;
+    }
+    categoryList.forEach(cat => {
+      const col = colorOf(cat.color);
+      const label = document.createElement('label');
+      label.className = 'cat-option';
+      label.style.color = col.badgeText;
+      if (selectedCategories.has(cat.key)) {
+        label.classList.add('selected');
+        label.style.background = col.badgeBg;
+        label.style.borderColor = col.dot;
+      }
+      label.innerHTML = `<input type="checkbox" value="${escapeHtml(cat.key)}"><span class="swatch" style="background:${col.dot}"></span>${escapeHtml(cat.emoji)} ${escapeHtml(cat.label)}`;
+      const checkbox = label.querySelector('input');
+      checkbox.checked = selectedCategories.has(cat.key);
+      label.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (selectedCategories.has(cat.key)) selectedCategories.delete(cat.key);
+        else selectedCategories.add(cat.key);
+        renderCatMultiSelect();
+      });
+      wrap.appendChild(label);
+    });
   }
-  function closeModal(){
-    document.getElementById('modal').classList.add('hidden');
-  }
+
+  // ---- 取引先モーダル ----
+  function openModal(){ document.getElementById('modal').classList.remove('hidden'); }
+  function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
 
   function openAddModal(){
     document.getElementById('modalTitle').textContent = '取引先を新規追加';
     document.getElementById('currentCardId').value = 'NEW';
     document.getElementById('editName').value = '';
-    document.getElementById('editCategory').value = 'pudding';
+    selectedCategories = new Set();
+    renderCatMultiSelect();
     document.getElementById('editTeleapoDate').value = '';
     document.getElementById('editNextTeleapoDate').value = '';
     document.getElementById('editNextDate').value = '';
@@ -547,7 +754,8 @@
     document.getElementById('modalTitle').textContent = '取引先詳細';
     document.getElementById('currentCardId').value = card.id;
     document.getElementById('editName').value = card.name || '';
-    document.getElementById('editCategory').value = card.category || 'other';
+    selectedCategories = new Set(card.categories || []);
+    renderCatMultiSelect();
     document.getElementById('editTeleapoDate').value = card.teleapoDate || '';
     document.getElementById('editNextTeleapoDate').value = card.nextTeleapoDate || '';
     document.getElementById('editNextDate').value = card.nextDate || '';
@@ -561,7 +769,7 @@
     const saveBtn = document.getElementById('btnSave');
     const id = document.getElementById('currentCardId').value;
     const name = document.getElementById('editName').value.trim();
-    const category = document.getElementById('editCategory').value;
+    const categories = Array.from(selectedCategories);
     const teleapoDate = document.getElementById('editTeleapoDate').value;
     const nextTeleapoDate = document.getElementById('editNextTeleapoDate').value;
     const nextDate = document.getElementById('editNextDate').value;
@@ -577,37 +785,37 @@
       if (id === 'NEW') {
         const newId = Date.now().toString();
         const newCard = {
-          id: newId, name, category, status: 'teleapo',
+          id: newId, name, categories, status: 'teleapo',
           teleapoDate: teleapoDate || null, nextTeleapoDate: nextTeleapoDate || null,
           nextDate: nextDate || null, contractDate: contractDate || null, notes
         };
         const serverData = {
-          id: newId, name, category, status: 'teleapo',
+          id: newId, name, categories, category: categories[0] || null, status: 'teleapo',
           teleapo_date: teleapoDate || null, next_teleapo_date: nextTeleapoDate || null,
           next_date: nextDate || null, contract_date: contractDate || null, notes
         };
         const ok = await persistInsert(serverData);
         if (!ok) {
           appData.cards.push(newCard);
-          saveLocal(appData.cards);
+          saveLocalCards(appData.cards);
         }
       } else {
         const existing = appData.cards.find(c => String(c.id) === String(id));
         const status = existing ? existing.status : 'teleapo';
         const serverData = {
-          name, category, status,
+          name, categories, category: categories[0] || null, status,
           teleapo_date: teleapoDate || null, next_teleapo_date: nextTeleapoDate || null,
           next_date: nextDate || null, contract_date: contractDate || null, notes
         };
         const ok = await persistUpdate(id, serverData);
         if (!ok && existing) {
-          Object.assign(existing, { name, category, teleapoDate, nextTeleapoDate, nextDate, contractDate, notes });
-          saveLocal(appData.cards);
+          Object.assign(existing, { name, categories, teleapoDate, nextTeleapoDate, nextDate, contractDate, notes });
+          saveLocalCards(appData.cards);
         }
       }
 
       closeModal();
-      await fetchCardsFromServer();
+      await refreshAll();
       showToast('保存しました');
     } catch(e) {
       console.error(e);
@@ -626,32 +834,157 @@
     const ok = await persistDelete(id);
     if (!ok) {
       appData.cards = appData.cards.filter(c => String(c.id) !== String(id));
-      saveLocal(appData.cards);
+      saveLocalCards(appData.cards);
     }
     closeModal();
-    await fetchCardsFromServer();
+    await refreshAll();
     showToast('削除しました');
   }
 
-  // ---- 起動 ----
+  // ---- カテゴリー管理モーダル ----
+  function openCatModal(){
+    renderCatManageList();
+    renderColorSwatches();
+    document.getElementById('newCatEmoji').value = '📁';
+    document.getElementById('newCatLabel').value = '';
+    document.getElementById('catModal').classList.remove('hidden');
+  }
+  function closeCatModal(){ document.getElementById('catModal').classList.add('hidden'); }
+
+  function renderColorSwatches(){
+    const wrap = document.getElementById('colorSwatches');
+    wrap.innerHTML = '';
+    COLOR_PALETTE.forEach(col => {
+      const dot = document.createElement('div');
+      dot.className = 'color-dot' + (col.name === selectedNewCatColor ? ' selected' : '');
+      dot.style.background = col.dot;
+      dot.title = col.name;
+      dot.addEventListener('click', () => {
+        selectedNewCatColor = col.name;
+        renderColorSwatches();
+      });
+      wrap.appendChild(dot);
+    });
+  }
+
+  function usageCountForCategory(key){
+    return appData.cards.filter(c => (c.categories || []).includes(key)).length;
+  }
+
+  function renderCatManageList(){
+    const list = document.getElementById('catManageList');
+    list.innerHTML = '';
+    if (categoryList.length === 0){
+      list.innerHTML = '<div class="cat-empty-note">カテゴリーがまだありません。下のフォームから追加してください。</div>';
+      return;
+    }
+    categoryList.forEach(cat => {
+      const col = colorOf(cat.color);
+      const used = usageCountForCategory(cat.key);
+      const row = document.createElement('div');
+      row.className = 'cat-manage-row';
+      row.innerHTML =
+        `<span class="swatch" style="background:${col.dot}"></span>
+         <span class="emoji">${escapeHtml(cat.emoji)}</span>
+         <span class="name">${escapeHtml(cat.label)}</span>
+         <span class="usage">${used}件で使用中</span>`;
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'cat-del-btn';
+      delBtn.innerHTML = '🗑';
+      delBtn.title = '削除';
+      delBtn.addEventListener('click', () => handleDeleteCategory(cat, used));
+      row.appendChild(delBtn);
+      list.appendChild(row);
+    });
+  }
+
+  async function handleDeleteCategory(cat, usedCount){
+    if (usedCount > 0){
+      showToast(`「${cat.label}」は${usedCount}件の取引先に使用中のため削除できません。先にカードのカテゴリーを外してください。`, true);
+      return;
+    }
+    if (!confirm(`カテゴリー「${cat.emoji} ${cat.label}」を削除します。よろしいですか？`)) return;
+
+    const ok = await persistCategoryDelete(cat.id);
+    categoryList = categoryList.filter(c => c.id !== cat.id);
+    if (!ok) saveLocalCategories(categoryList);
+    renderCatManageList();
+    renderFilterChips();
+    renderCatMultiSelect();
+    renderBoard();
+    showToast('カテゴリーを削除しました');
+  }
+
+  async function handleAddCategory(){
+    const emojiInput = document.getElementById('newCatEmoji');
+    const labelInput = document.getElementById('newCatLabel');
+    const emoji = emojiInput.value.trim() || '📁';
+    const label = labelInput.value.trim();
+
+    if (!label){ showToast('カテゴリー名を入力してください', true); return; }
+
+    // key生成：ラベルから簡易スラッグ。重複があれば連番を付与
+    let baseKey = label.toLowerCase().replace(/[^a-z0-9ぁ-んァ-ン一-龥]+/g, '_').replace(/^_+|_+$/g, '') || 'cat';
+    let key = baseKey;
+    let suffix = 1;
+    while (categoryList.some(c => c.key === key)) {
+      key = `${baseKey}_${suffix}`;
+      suffix++;
+    }
+
+    const newCat = {
+      id: 'cat_' + Date.now().toString(),
+      key, label, emoji, color: selectedNewCatColor,
+      sort_order: categoryList.length + 1
+    };
+
+    const addBtn = document.getElementById('btnAddCategory');
+    addBtn.disabled = true;
+    try {
+      const ok = await persistCategoryInsert(newCat);
+      categoryList.push(newCat);
+      if (!ok) saveLocalCategories(categoryList);
+
+      labelInput.value = '';
+      emojiInput.value = '📁';
+      selectedNewCatColor = COLOR_PALETTE[0].name;
+      renderColorSwatches();
+      renderCatManageList();
+      renderFilterChips();
+      renderCatMultiSelect();
+      showToast('カテゴリーを追加しました');
+    } finally {
+      addBtn.disabled = false;
+    }
+  }
+
+  // ---- 起動・イベント結線 ----
   function bindUI(){
     document.getElementById('btnAdd').addEventListener('click', openAddModal);
     document.getElementById('btnCancel').addEventListener('click', closeModal);
     document.getElementById('btnSave').addEventListener('click', saveCardDetails);
     document.getElementById('btnDelete').addEventListener('click', deleteCard);
-    document.getElementById('modal').addEventListener('click', (e) => {
-      if (e.target.id === 'modal') closeModal();
-    });
+    document.getElementById('modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
+
+    document.getElementById('btnManageCats').addEventListener('click', openCatModal);
+    document.getElementById('btnCatModalClose').addEventListener('click', closeCatModal);
+    document.getElementById('catModal').addEventListener('click', (e) => { if (e.target.id === 'catModal') closeCatModal(); });
+    document.getElementById('btnAddCategory').addEventListener('click', handleAddCategory);
+    document.getElementById('newCatLabel').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleAddCategory(); });
+
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Escape') { closeModal(); closeCatModal(); }
     });
-    setupFilters();
+
+    const allBtn = document.querySelector('.chip[data-filter="ALL"]');
+    allBtn.addEventListener('click', () => { currentFilter = 'ALL'; renderFilterChips(); renderBoard(); });
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
     bindUI();
     supabaseReady = tryInitSupabase();
-    await fetchCardsFromServer();
+    await refreshAll();
     initDragAndDrop();
   });
 })();
