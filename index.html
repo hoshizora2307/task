@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>営業進捗・案件管理アプリ</title>
+    <title>営業進捗・案件活動管理アプリ</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         .ghost { opacity: 0.4; background: #e2e8f0; }
-        /* カレンダーのレスポンシブ調整 */
-        .calendar-grid div { min-height: 50px; }
+        .calendar-grid div { min-height: 65px; }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 font-sans flex flex-col">
 
     <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0">
-        <h1 class="text-xl font-bold">🏢 営業進捗 ＆ カレンダー管理</h1>
+        <h1 class="text-xl font-bold">🏢 営業進捗 ＆ 活動カレンダー管理</h1>
         <button onclick="openAddModal()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-50 transition active:scale-95 w-full sm:w-auto">
             + 取引先を追加
         </button>
@@ -54,9 +53,12 @@
         </div>
 
         <div class="w-full lg:w-96 bg-white p-4 rounded-xl shadow-sm border border-slate-200 shrink-0">
-            <h2 id="calendarMonthTitle" class="font-bold text-slate-800 text-lg mb-3 flex justify-between items-center">
-                📅 訪問スケジュール
-            </h2>
+            <h2 id="calendarMonthTitle" class="font-bold text-slate-800 text-lg mb-1">📅 営業活動スケジュール</h2>
+            <div class="flex gap-2 text-[10px] mb-3 text-slate-500">
+                <span class="flex items-center gap-0.5"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>テレアポ</span>
+                <span class="flex items-center gap-0.5"><span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>訪問予定</span>
+                <span class="flex items-center gap-0.5"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>成約日</span>
+            </div>
             <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-500 mb-2 border-b pb-1">
                 <div class="text-red-500">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div class="text-blue-500">土</div>
             </div>
@@ -70,7 +72,7 @@
     </footer>
 
     <div id="modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 id="modalTitle" class="text-xl font-bold border-b pb-3 mb-4 text-slate-800">取引先詳細</h3>
             <input type="hidden" id="currentCardId">
             
@@ -87,13 +89,24 @@
                         <option value="other">📁 その他（一般業務など）</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">次に行く日（予定日）</label>
-                    <input type="date" id="editNextDate" class="w-full border rounded-lg p-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                <div class="grid grid-cols-1 gap-2 border-t pt-2">
+                    <label class="block text-xs font-bold text-slate-700">🗓 各種活動日・予定の記録</label>
+                    <div>
+                        <label class="block text-[11px] text-slate-500 mb-0.5">📞 テレアポした日</label>
+                        <input type="date" id="editTeleapoDate" class="w-full border rounded-lg p-1.5 bg-slate-50 focus:bg-white text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-500 mb-0.5">📅 次に行く日（訪問予定日）</label>
+                        <input type="date" id="editNextDate" class="w-full border rounded-lg p-1.5 bg-slate-50 focus:bg-white text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-500 mb-0.5">🎉 成約した日</label>
+                        <input type="date" id="editContractDate" class="w-full border rounded-lg p-1.5 bg-slate-50 focus:bg-white text-sm outline-none">
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1">進捗・行動メモ</label>
-                    <textarea id="editNotes" rows="4" placeholder="テレアポの感触や、訪問時の詳細をメモ..." class="w-full border rounded-lg p-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"></textarea>
+                    <textarea id="editNotes" rows="3" placeholder="テレアポの感触や、訪問時の詳細をメモ..." class="w-full border rounded-lg p-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"></textarea>
                 </div>
             </div>
 
@@ -108,22 +121,20 @@
     </div>
 
     <script>
-        // 現在の絞り込み状態 ('ALL', 'pudding', 'star', 'other')
         let currentFilter = 'ALL';
 
-        // 初期データ（サンプル）
+        // 初期データ（今日の日付をベースにサンプル生成）
+        const todayStr = new Date().toISOString().split('T')[0];
         let appData = JSON.parse(localStorage.getItem('mondocolo_crm_data')) || {
             cards: [
-                { id: '1', name: '緑翠亭 景水', status: 'visit', category: 'pudding', nextDate: new Date().toISOString().split('T')[0], notes: 'テレアポにてアポ獲得。ウェルカムプリンの試食提案を行う。' },
-                { id: '2', name: '星の子ホテル', status: 'teleapo', category: 'star', nextDate: '', notes: '星空鑑賞会イベントの企画書送付済み。追客の連絡を入れる。' }
+                { id: '1', name: '緑翠亭 景水', status: 'visit', category: 'pudding', teleapoDate: todayStr, nextDate: todayStr, contractDate: '', notes: '本日テレアポ実施、即日初回訪問アポ獲得！プリンの試食提案を実施。' }
             ]
         };
 
-        // カテゴリーごとのデザイン設定
         const catConfig = {
-            pudding: { label: 'プリン', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-800', badge: 'bg-amber-100 text-amber-900' },
-            star: { label: '星空', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-800', badge: 'bg-purple-100 text-purple-900' },
-            other: { label: 'その他', bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-700', badge: 'bg-slate-200 text-slate-800' }
+            pudding: { label: 'プリン', bg: 'bg-amber-50', border: 'border-amber-200', badge: 'bg-amber-100 text-amber-900' },
+            star: { label: '星空', bg: 'bg-purple-50', border: 'border-purple-200', badge: 'bg-purple-100 text-purple-900' },
+            other: { label: 'その他', bg: 'bg-slate-50', border: 'border-slate-200', badge: 'bg-slate-200 text-slate-800' }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -131,36 +142,26 @@
             initDragAndDrop();
         });
 
-        // 絞り込み切り替えボタン
         function filterCategory(cat) {
             currentFilter = cat;
-            // ボタンの見た目更新
             ['ALL', 'pudding', 'star', 'other'].forEach(c => {
                 const btn = document.getElementById(`btn-filter-${c}`);
-                if(c === cat) {
-                    btn.className = "px-3 py-1.5 rounded-full text-xs font-bold bg-blue-600 text-white shadow";
-                } else {
-                    btn.className = "px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200";
-                }
+                btn.className = c === cat ? "px-3 py-1.5 rounded-full text-xs font-bold bg-blue-600 text-white shadow" : "px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200";
             });
             renderBoard();
         }
 
-        // メイン描画（ボード ＆ カレンダー）
         function renderBoard() {
             const lists = { teleapo: [], visit: [], proposal: [], contract: [] };
             
-            // データの仕分け
             appData.cards.forEach(card => {
                 if (lists[card.status]) {
-                    // フィルター条件に合致するものだけ
                     if (currentFilter === 'ALL' || card.category === currentFilter) {
                         lists[card.status].push(card);
                     }
                 }
             });
 
-            // 各列の描画
             Object.keys(lists).forEach(status => {
                 const listEl = document.getElementById(status);
                 listEl.innerHTML = '';
@@ -172,9 +173,12 @@
                     cardEl.setAttribute('data-id', card.id);
                     cardEl.onclick = () => openEditModal(card.id);
 
-                    let dateBadge = '';
+                    let dateBadges = '';
                     if(card.nextDate) {
-                        dateBadge = `<div class="mt-2 text-[10px] font-bold text-blue-600 bg-white/80 border border-blue-200 px-1.5 py-0.5 rounded inline-block">📅 次回: ${card.nextDate}</div>`;
+                        dateBadges += `<div class="mt-1 text-[9px] font-bold text-blue-600 bg-white/90 border border-blue-200 px-1 py-0.5 rounded inline-block mr-1">📅 訪問: ${card.nextDate}</div>`;
+                    }
+                    if(card.contractDate) {
+                        dateBadges += `<div class="mt-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.5 rounded inline-block">🎉 成約!</div>`;
                     }
 
                     cardEl.innerHTML = `
@@ -183,7 +187,7 @@
                             <span class="${cfg.badge} text-[10px] px-1.5 py-0.5 rounded-md font-bold shrink-0">${cfg.label}</span>
                         </div>
                         <p class="text-xs text-slate-500 mt-1 line-clamp-2">${card.notes || 'メモなし'}</p>
-                        ${dateBadge}
+                        <div class="flex flex-wrap">${dateBadges}</div>
                     `;
                     listEl.appendChild(cardEl);
                 });
@@ -195,7 +199,6 @@
             localStorage.setItem('mondocolo_crm_data', JSON.stringify(appData));
         }
 
-        // ドラッグ＆ドロップ設定
         function initDragAndDrop() {
             ['teleapo', 'visit', 'proposal', 'contract'].forEach(id => {
                 Sortable.create(document.getElementById(id), {
@@ -208,6 +211,10 @@
                         const card = appData.cards.find(c => c.id === cardId);
                         if (card) {
                             card.status = newStatus;
+                            // 自動で成約日などを補完するおまけ機能
+                            if(newStatus === 'contract' && !card.contractDate) {
+                                card.contractDate = new Date().toISOString().split('T')[0];
+                            }
                             renderBoard();
                         }
                     }
@@ -215,70 +222,79 @@
             });
         }
 
-        // ミニカレンダー機能（今月固定）
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
             
             const now = new Date();
             const year = now.getFullYear();
-            const month = now.getMonth(); // 0 = 1月
+            const month = now.getMonth();
             
-            document.getElementById('calendarMonthTitle').innerText = `📅 訪問スケジュール (${year}年${month + 1}月)`;
+            document.getElementById('calendarMonthTitle').innerText = `📅 活動スケジュール (${year}年${month + 1}月)`;
 
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            // 空白セル埋め
             for (let i = 0; i < firstDay; i++) {
                 grid.appendChild(document.createElement('div'));
             }
 
-            // 日付セル生成
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 
                 const cell = document.createElement('div');
-                cell.className = 'bg-slate-50 border border-slate-100 p-1 rounded min-h-[60px] flex flex-col justify-between overflow-hidden';
+                cell.className = 'bg-slate-50 border border-slate-100 p-1 rounded flex flex-col justify-between overflow-hidden';
                 
-                // 日付の数字
                 const num = document.createElement('span');
-                num.className = 'font-bold text-slate-400 block text-[10px]';
+                num.className = 'font-bold text-slate-400 block text-[9px] mb-0.5';
                 num.innerText = day;
                 cell.appendChild(num);
 
-                // この日の予定（取引先）を探す
-                const todayCards = appData.cards.filter(c => c.nextDate === dayStr);
-                if(todayCards.length > 0) {
-                    const listContainer = document.createElement('div');
-                    listContainer.className = 'space-y-0.5 mt-1 overflow-y-auto max-h-[40px]';
-                    
-                    todayCards.forEach(c => {
-                        const cfg = catConfig[c.category] || catConfig.other;
-                        const item = document.createElement('div');
-                        item.className = `${cfg.badge} text-[9px] px-1 rounded truncate font-bold cursor-pointer`;
-                        item.innerText = c.name;
-                        item.onclick = (e) => {
-                            e.stopPropagation(); // カレンダーセルのクリックイベント発火を防ぐ
-                            openEditModal(c.id);
-                        };
-                        listContainer.appendChild(item);
-                    });
-                    cell.appendChild(listContainer);
-                    cell.className = 'bg-blue-50/50 border border-blue-100 p-1 rounded min-h-[60px] flex flex-col justify-between overflow-hidden';
-                }
+                const listContainer = document.createElement('div');
+                listContainer.className = 'space-y-0.5 overflow-y-auto flex-1 max-h-[50px]';
 
+                // この日に該当するイベントを全スキャン
+                appData.cards.forEach(c => {
+                    if (currentFilter !== 'ALL' && c.category !== currentFilter) return;
+
+                    // 📞 テレアポ日
+                    if(c.teleapoDate === dayStr) {
+                        createBadge(listContainer, `📞 ${c.name}`, 'bg-amber-400 text-white', c.id);
+                    }
+                    // 📅 訪問予定日
+                    if(c.nextDate === dayStr) {
+                        createBadge(listContainer, `📅 ${c.name}`, 'bg-blue-500 text-white', c.id);
+                    }
+                    // 🎉 成約日
+                    if(c.contractDate === dayStr) {
+                        createBadge(listContainer, `🎉 ${c.name}`, 'bg-emerald-500 text-white', c.id);
+                    }
+                });
+
+                cell.appendChild(listContainer);
                 grid.appendChild(cell);
             }
         }
 
-        // モーダル処理
+        function createBadge(container, text, bgClass, id) {
+            const item = document.createElement('div');
+            item.className = `${bgClass} text-[8px] px-1 rounded truncate font-bold cursor-pointer leading-tight`;
+            item.innerText = text;
+            item.onclick = (e) => {
+                e.stopPropagation();
+                openEditModal(id);
+            };
+            container.appendChild(item);
+        }
+
         function openAddModal() {
             document.getElementById('currentCardId').value = 'NEW';
             document.getElementById('modalTitle').innerText = '➕ 新しい取引先を追加';
             document.getElementById('editName').value = '';
             document.getElementById('editCategory').value = 'pudding';
+            document.getElementById('editTeleapoDate').value = '';
             document.getElementById('editNextDate').value = '';
+            document.getElementById('editContractDate').value = '';
             document.getElementById('editNotes').value = '';
             document.getElementById('modal').classList.remove('hidden');
         }
@@ -291,7 +307,9 @@
             document.getElementById('modalTitle').innerText = '🔍 取引先の詳細・編集';
             document.getElementById('editName').value = card.name;
             document.getElementById('editCategory').value = card.category;
+            document.getElementById('editTeleapoDate').value = card.teleapoDate || '';
             document.getElementById('editNextDate').value = card.nextDate || '';
+            document.getElementById('editContractDate').value = card.contractDate || '';
             document.getElementById('editNotes').value = card.notes || '';
             document.getElementById('modal').classList.remove('hidden');
         }
@@ -304,7 +322,9 @@
             const id = document.getElementById('currentCardId').value;
             const name = document.getElementById('editName').value.trim();
             const category = document.getElementById('editCategory').value;
+            const teleapoDate = document.getElementById('editTeleapoDate').value;
             const nextDate = document.getElementById('editNextDate').value;
+            const contractDate = document.getElementById('editContractDate').value;
             const notes = document.getElementById('editNotes').value;
 
             if (!name) {
@@ -318,7 +338,9 @@
                     name: name,
                     status: 'teleapo',
                     category: category,
+                    teleapoDate: teleapoDate,
                     nextDate: nextDate,
+                    contractDate: contractDate,
                     notes: notes
                 };
                 appData.cards.push(newCard);
@@ -327,7 +349,9 @@
                 if (card) {
                     card.name = name;
                     card.category = category;
+                    card.teleapoDate = teleapoDate;
                     card.nextDate = nextDate;
+                    card.contractDate = contractDate;
                     card.notes = notes;
                 }
             }
