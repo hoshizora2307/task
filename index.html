@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>営業進捗管理アプリ</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <style>
+        .ghost { opacity: 0.4; background: #e2e8f0; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans flex flex-col">
+
+    <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center shrink-0">
+        <h1 class="text-xl font-bold">🏢 営業進捗管理ボード</h1>
+        <button onclick="openAddModal()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-50 transition active:scale-95">
+            + 取引先を追加
+        </button>
+    </header>
+
+    <main class="p-4 md:p-6 overflow-x-auto flex gap-4 items-start flex-1" style="min-height: calc(100vh - 120px);">
+        
+        <div class="bg-slate-200 p-3 rounded-xl w-80 shrink-0 shadow-sm flex flex-col max-h-[80vh]">
+            <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1">📞 テレアポ <span class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
+            <div id="teleapo" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
+        </div>
+
+        <div class="bg-slate-200 p-3 rounded-xl w-80 shrink-0 shadow-sm flex flex-col max-h-[80vh]">
+            <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1">🤝 初回訪問 <span class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
+            <div id="visit" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
+        </div>
+
+        <div class="bg-slate-200 p-3 rounded-xl w-80 shrink-0 shadow-sm flex flex-col max-h-[80vh]">
+            <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1">📄 提案・見積 <span class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
+            <div id="proposal" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
+        </div>
+
+        <div class="bg-slate-200 p-3 rounded-xl w-80 shrink-0 shadow-sm flex flex-col max-h-[80vh]">
+            <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1">🎉 成約 <span class="bg-emerald-200 text-emerald-800 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
+            <div id="contract" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 text-center py-3 text-xs shrink-0">
+        &copy; 2026 株式会社MONDOCOLO All Rights Reserved.
+    </footer>
+
+    <div id="modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150">
+            <h3 id="modalTitle" class="text-xl font-bold border-b pb-3 mb-4 text-slate-800">取引先詳細</h3>
+            <input type="hidden" id="currentCardId">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">取引先名</label>
+                    <input type="text" id="editName" class="w-full border rounded-lg p-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">次に行く日（予定日）</label>
+                    <input type="date" id="editNextDate" class="w-full border rounded-lg p-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">進捗・行動メモ</label>
+                    <textarea id="editNotes" rows="4" placeholder="テレアポの感触や、訪問時の詳細をメモ..." class="w-full border rounded-lg p-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"></textarea>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-between gap-2 border-t pt-4">
+                <button onclick="deleteCard()" class="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 transition">削除</button>
+                <div class="flex gap-2">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200 transition">閉じる</button>
+                    <button onclick="saveCardDetails()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow transition">保存する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let appData = JSON.parse(localStorage.getItem('my_crm_data')) || {
+            cards: [
+                { id: '1', name: '緑翠亭 景水', status: 'visit', nextDate: '2026-07-05', notes: 'テレアポにてアポ獲得。現在のシステムに不満ありとのこと。次回提案書を持参。' }
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderBoard();
+            initDragAndDrop();
+        });
+
+        function renderBoard() {
+            const lists = { teleapo: [], visit: [], proposal: [], contract: [] };
+            
+            appData.cards.forEach(card => {
+                if (lists[card.status]) lists[card.status].push(card);
+            });
+
+            Object.keys(lists).forEach(status => {
+                const listEl = document.getElementById(status);
+                listEl.innerHTML = '';
+                
+                lists[status].forEach(card => {
+                    const cardEl = document.createElement('div');
+                    cardEl.className = 'bg-white p-3 rounded-xl shadow-sm border border-slate-200 cursor-grab active:cursor-grabbing hover:border-blue-400 transition relative group';
+                    cardEl.setAttribute('data-id', card.id);
+                    cardEl.onclick = () => openEditModal(card.id);
+
+                    let dateBadge = '';
+                    if(card.nextDate) {
+                        dateBadge = `<div class="mt-2 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block">📅 次回: ${card.nextDate}</div>`;
+                    }
+
+                    cardEl.innerHTML = `
+                        <div class="font-bold text-slate-800 pr-4">${card.name}</div>
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-2">${card.notes || 'メモなし'}</p>
+                        ${dateBadge}
+                    `;
+                    listEl.appendChild(cardEl);
+                });
+
+                listEl.parentElement.querySelector('.card-count').innerText = lists[status].length;
+            });
+
+            localStorage.setItem('my_crm_data', JSON.stringify(appData));
+        }
+
+        function initDragAndDrop() {
+            const columns = ['teleapo', 'visit', 'proposal', 'contract'];
+            columns.forEach(id => {
+                Sortable.create(document.getElementById(id), {
+                    group: 'kanban',
+                    ghostClass: 'ghost',
+                    animation: 150,
+                    onEnd: (evt) => {
+                        const cardId = evt.item.getAttribute('data-id');
+                        const newStatus = evt.to.id;
+                        
+                        const card = appData.cards.find(c => c.id === cardId);
+                        if (card) {
+                            card.status = newStatus;
+                            renderBoard();
+                        }
+                    }
+                });
+            });
+        }
+
+        function openAddModal() {
+            document.getElementById('currentCardId').value = 'NEW';
+            document.getElementById('modalTitle').innerText = '➕ 新しい取引先を追加';
+            document.getElementById('editName').value = '';
+            document.getElementById('editNextDate').value = '';
+            document.getElementById('editNotes').value = '';
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function openEditModal(id) {
+            const card = appData.cards.find(c => c.id === id);
+            if (!card) return;
+
+            document.getElementById('currentCardId').value = card.id;
+            document.getElementById('modalTitle').innerText = '🔍 取引先の詳細・編集';
+            document.getElementById('editName').value = card.name;
+            document.getElementById('editNextDate').value = card.nextDate || '';
+            document.getElementById('editNotes').value = card.notes || '';
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function saveCardDetails() {
+            const id = document.getElementById('currentCardId').value;
+            const name = document.getElementById('editName').value.trim();
+            const nextDate = document.getElementById('editNextDate').value;
+            const notes = document.getElementById('editNotes').value;
+
+            if (!name) {
+                alert('取引先名を入力してください！');
+                return;
+            }
+
+            if (id === 'NEW') {
+                const newCard = {
+                    id: Date.now().toString(),
+                    name: name,
+                    status: 'teleapo',
+                    nextDate: nextDate,
+                    notes: notes
+                };
+                appData.cards.push(newCard);
+            } else {
+                const card = appData.cards.find(c => c.id === id);
+                if (card) {
+                    card.name = name;
+                    card.nextDate = nextDate;
+                    card.notes = notes;
+                }
+            }
+
+            closeModal();
+            renderBoard();
+        }
+
+        function deleteCard() {
+            const id = document.getElementById('currentCardId').value;
+            if (id === 'NEW') {
+                closeModal();
+                return;
+            }
+
+            if (confirm('この取引先データを削除してもよろしいですか？')) {
+                appData.cards = appData.cards.filter(c => c.id !== id);
+                closeModal();
+                renderBoard();
+            }
+        }
+    </script>
+</body>
+</html>
