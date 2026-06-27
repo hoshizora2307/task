@@ -83,9 +83,8 @@
     </div>
 
     <script>
-        // 🛠【重要】ここにステップ3で取得したURLとキーを貼り付けてください！
-        const SUPABASE_URL = "https://fcyudtejvlsukcxtnzyw.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_oYjRKfWMxNIM8xUfZrnH7A_m5J0fS5J";
+        const SUPABASE_URL = "https://fcyudtejvlsukcxtnzyw.supabase.co"; // 👈 136行目: 自動埋込済
+        const SUPABASE_ANON_KEY = "sb_publishable_oYjRKfWxNiM8XUfZrnH7A_m5J0fここに見えなかった残りの文字を追記"; // 👈 137行目
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentFilter = 'ALL';
@@ -102,17 +101,18 @@
             initDragAndDrop();
         });
 
-        // サーバーから最新データをまとめてダウンロード
         async function fetchCardsFromServer() {
-            const { data, error } = await supabase.from('sales_cards').select('*').order('created_at', { ascending: true });
-            if (!error && data) {
-                appData.cards = data.map(item => ({
-                    id: item.id, name: item.name, status: item.status, category: item.category,
-                    teleapoDate: item.teleapo_date, nextTeleapoDate: item.next_teleapo_date,
-                    nextDate: item.next_date, contractDate: item.contract_date, notes: item.notes
-                }));
-            }
-            renderBoard();
+            try {
+                const { data, error } = await supabase.from('sales_cards').select('*').order('created_at', { ascending: true });
+                if (!error && data) {
+                    appData.cards = data.map(item => ({
+                        id: item.id, name: item.name, status: item.status, category: item.category,
+                        teleapoDate: item.teleapo_date, nextTeleapoDate: item.next_teleapo_date,
+                        nextDate: item.next_date, contractDate: item.contract_date, notes: item.notes
+                    }));
+                }
+                renderBoard();
+            } catch(e) { console.error(e); }
         }
 
         function filterCategory(cat) {
@@ -169,7 +169,6 @@
                                 card.contractDate = new Date().toISOString().split('T')[0];
                                 updateData.contract_date = card.contractDate;
                             }
-                            // 🛜 サーバーのステータスを書き換え
                             await supabase.from('sales_cards').update(updateData).eq('id', cardId);
                             renderBoard();
                         }
@@ -253,22 +252,19 @@
             if (id === 'NEW') {
                 const newId = Date.now().toString();
                 serverData.id = newId;
-                // 🛜 サーバーへ新規追加
                 await supabase.from('sales_cards').insert([serverData]);
             } else {
-                // 🛜 サーバー側を上書き更新
                 await supabase.from('sales_cards').update(serverData).eq('id', id);
             }
 
             closeModal();
-            await fetchCardsFromServer(); // 最新データを再取得して画面更新
+            await fetchCardsFromServer();
         }
 
         async function deleteCard() {
             const id = document.getElementById('currentCardId').value;
             if (id === 'NEW') { closeModal(); return; }
             if (confirm('データを完全に削除します。よろしいですか？')) {
-                // 🛜 サーバーから削除
                 await supabase.from('sales_cards').delete().eq('id', id);
                 closeModal();
                 await fetchCardsFromServer();
