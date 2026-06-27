@@ -185,14 +185,38 @@
     border-radius:6px; line-height:1;
   }
   .cat-del-btn:hover{ background:var(--red-50); color:var(--red-600); }
+  .cat-edit-btn{
+    background:none; border:none; color:var(--slate-400); cursor:pointer; font-size:.95rem; padding:2px 6px;
+    border-radius:6px; line-height:1;
+  }
+  .cat-edit-btn:hover{ background:var(--blue-light); color:var(--blue); }
+  .cat-manage-row-editing{
+    flex-direction:column; align-items:stretch; gap:8px; background:#fff; border-color:var(--blue);
+    padding:12px;
+  }
+  .cat-manage-row-editing .emoji-input{ width:54px; }
+  .cat-manage-row-editing input[type=text]{
+    border:1px solid var(--slate-300); border-radius:8px; padding:7px 9px; font-size:.85rem; outline:none;
+    background:var(--slate-50);
+  }
+  .cat-manage-row-editing input[type=text]:focus{ background:#fff; border-color:var(--blue); }
+  .cat-edit-colors{ margin-top:2px; }
+  .cat-edit-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:4px; }
+  .btn-cat-edit-save, .btn-cat-edit-cancel{
+    border:none; border-radius:8px; padding:6px 12px; font-size:.78rem; font-weight:700; cursor:pointer;
+  }
+  .btn-cat-edit-save{ background:var(--blue); color:#fff; }
+  .btn-cat-edit-save:hover{ background:var(--blue-dark); }
+  .btn-cat-edit-cancel{ background:var(--slate-100); color:var(--slate-600); }
+  .btn-cat-edit-cancel:hover{ background:var(--slate-200); }
   .cat-add-form{ border-top:1px solid var(--slate-200); padding-top:14px; display:flex; flex-direction:column; gap:10px; }
-  .cat-add-row{ display:flex; gap:8px; }
+  .cat-add-row{ display:flex; gap:8px; min-width:0; }
   .cat-add-row input[type=text]{
-    flex:1; border:1px solid var(--slate-300); border-radius:10px; padding:8px 10px; font-size:.85rem;
+    flex:1 1 auto; min-width:0; border:1px solid var(--slate-300); border-radius:10px; padding:8px 10px; font-size:.85rem;
     outline:none; background:var(--slate-50);
   }
   .cat-add-row input[type=text]:focus{ background:#fff; border-color:var(--blue); }
-  .emoji-input{ width:54px; text-align:center; flex:none !important; }
+  .emoji-input{ width:54px; min-width:54px; flex:0 0 54px !important; text-align:center; }
   .color-swatches{ display:flex; gap:6px; flex-wrap:wrap; }
   .color-dot{
     width:24px; height:24px; border-radius:50%; cursor:pointer; border:2px solid transparent;
@@ -871,6 +895,8 @@
     return appData.cards.filter(c => (c.categories || []).includes(key)).length;
   }
 
+  let editingCategoryId = null; // 現在編集中のカテゴリーID（行内編集）
+
   function renderCatManageList(){
     const list = document.getElementById('catManageList');
     list.innerHTML = '';
@@ -879,24 +905,98 @@
       return;
     }
     categoryList.forEach(cat => {
-      const col = colorOf(cat.color);
       const used = usageCountForCategory(cat.key);
       const row = document.createElement('div');
-      row.className = 'cat-manage-row';
-      row.innerHTML =
-        `<span class="swatch" style="background:${col.dot}"></span>
-         <span class="emoji">${escapeHtml(cat.emoji)}</span>
-         <span class="name">${escapeHtml(cat.label)}</span>
-         <span class="usage">${used}件で使用中</span>`;
-      const delBtn = document.createElement('button');
-      delBtn.type = 'button';
-      delBtn.className = 'cat-del-btn';
-      delBtn.innerHTML = '🗑';
-      delBtn.title = '削除';
-      delBtn.addEventListener('click', () => handleDeleteCategory(cat, used));
-      row.appendChild(delBtn);
+
+      if (editingCategoryId === cat.id) {
+        row.className = 'cat-manage-row cat-manage-row-editing';
+        const topRow = document.createElement('div');
+        topRow.style.display = 'flex';
+        topRow.style.gap = '8px';
+        topRow.style.minWidth = '0';
+        topRow.innerHTML = `
+          <input type="text" class="emoji-input cat-edit-emoji" maxlength="4" value="${escapeHtml(cat.emoji)}">
+          <input type="text" class="cat-edit-label" style="flex:1 1 auto;min-width:0;" maxlength="20" value="${escapeHtml(cat.label)}">
+        `;
+        row.appendChild(topRow);
+        const colorRow = document.createElement('div');
+        colorRow.className = 'color-swatches cat-edit-colors';
+        COLOR_PALETTE.forEach(col => {
+          const dot = document.createElement('div');
+          dot.className = 'color-dot' + (col.name === cat.color ? ' selected' : '');
+          dot.style.background = col.dot;
+          dot.title = col.name;
+          dot.addEventListener('click', () => {
+            cat._editingColor = col.name;
+            colorRow.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+            dot.classList.add('selected');
+          });
+          colorRow.appendChild(dot);
+        });
+
+        const actions = document.createElement('div');
+        actions.className = 'cat-edit-actions';
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button'; saveBtn.className = 'btn-cat-edit-save'; saveBtn.textContent = '保存';
+        saveBtn.addEventListener('click', () => {
+          const newEmoji = row.querySelector('.cat-edit-emoji').value.trim() || '📁';
+          const newLabel = row.querySelector('.cat-edit-label').value.trim();
+          if (!newLabel) { showToast('カテゴリー名を入力してください', true); return; }
+          handleUpdateCategory(cat, newEmoji, newLabel, cat._editingColor || cat.color);
+        });
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button'; cancelBtn.className = 'btn-cat-edit-cancel'; cancelBtn.textContent = 'キャンセル';
+        cancelBtn.addEventListener('click', () => { editingCategoryId = null; renderCatManageList(); });
+        actions.appendChild(cancelBtn);
+        actions.appendChild(saveBtn);
+
+        row.appendChild(colorRow);
+        row.appendChild(actions);
+      } else {
+        const col = colorOf(cat.color);
+        row.className = 'cat-manage-row';
+        row.innerHTML =
+          `<span class="swatch" style="background:${col.dot}"></span>
+           <span class="emoji">${escapeHtml(cat.emoji)}</span>
+           <span class="name">${escapeHtml(cat.label)}</span>
+           <span class="usage">${used}件で使用中</span>`;
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'cat-edit-btn';
+        editBtn.innerHTML = '✏️';
+        editBtn.title = '編集';
+        editBtn.addEventListener('click', () => { editingCategoryId = cat.id; renderCatManageList(); });
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'cat-del-btn';
+        delBtn.innerHTML = '🗑';
+        delBtn.title = '削除';
+        delBtn.addEventListener('click', () => handleDeleteCategory(cat, used));
+        row.appendChild(editBtn);
+        row.appendChild(delBtn);
+      }
       list.appendChild(row);
     });
+  }
+
+  async function handleUpdateCategory(cat, newEmoji, newLabel, newColor){
+    const updated = { emoji: newEmoji, label: newLabel, color: newColor };
+    let ok = false;
+    if (supabaseReady){
+      const { error } = await supabase.from('sales_categories').update(updated).eq('id', cat.id);
+      if (error) { console.error(error); showToast('サーバーへの更新に失敗しました（ローカルに保存します）', true); }
+      else ok = true;
+    }
+    Object.assign(cat, updated);
+    delete cat._editingColor;
+    if (!ok) saveLocalCategories(categoryList);
+
+    editingCategoryId = null;
+    renderCatManageList();
+    renderFilterChips();
+    renderCatMultiSelect();
+    renderBoard();
+    showToast('カテゴリーを更新しました');
   }
 
   async function handleDeleteCategory(cat, usedCount){
