@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>営業進捗・案件活動管理アプリ</title>
+    <title>小野田の営業日報 ＆ 活動管理</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
@@ -14,7 +14,7 @@
 <body class="bg-slate-100 min-h-screen text-slate-800 font-sans flex flex-col">
 
     <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0">
-        <h1 class="text-xl font-bold">🏢 営業進捗 ＆ 活動カレンダー管理</h1>
+        <h1 class="text-xl font-bold">📝 小野田の営業日報 ＆ 活動管理</h1>
         <button onclick="openAddModal()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-50 transition active:scale-95 w-full sm:w-auto">
             + 取引先を追加
         </button>
@@ -54,8 +54,8 @@
 
         <div class="w-full lg:w-96 bg-white p-4 rounded-xl shadow-sm border border-slate-200 shrink-0">
             <h2 id="calendarMonthTitle" class="font-bold text-slate-800 text-lg mb-1">📅 営業活動スケジュール</h2>
-            <div class="flex gap-2 text-[10px] mb-3 text-slate-500">
-                <span class="flex items-center gap-0.5"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>テレアポ</span>
+            <div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] mb-3 text-slate-500">
+                <span class="flex items-center gap-0.5"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>テレアポ済 / 再コール</span>
                 <span class="flex items-center gap-0.5"><span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>訪問予定</span>
                 <span class="flex items-center gap-0.5"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>成約日</span>
             </div>
@@ -91,9 +91,15 @@
                 </div>
                 <div class="grid grid-cols-1 gap-2 border-t pt-2">
                     <label class="block text-xs font-bold text-slate-700">🗓 各種活動日・予定の記録</label>
-                    <div>
-                        <label class="block text-[11px] text-slate-500 mb-0.5">📞 テレアポした日</label>
-                        <input type="date" id="editTeleapoDate" class="w-full border rounded-lg p-1.5 bg-slate-50 focus:bg-white text-sm outline-none">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[11px] text-slate-500 mb-0.5">📞 テレアポした日</label>
+                            <input type="date" id="editTeleapoDate" class="w-full border rounded-lg p-1.5 bg-slate-50 focus:bg-white text-xs outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-blue-600 font-bold mb-0.5">📞 次回テレアポする日</label>
+                            <input type="date" id="editNextTeleapoDate" class="w-full border border-blue-200 rounded-lg p-1.5 bg-blue-50/50 focus:bg-white text-xs outline-none">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-[11px] text-slate-500 mb-0.5">📅 次に行く日（訪問予定日）</label>
@@ -123,11 +129,10 @@
     <script>
         let currentFilter = 'ALL';
 
-        // 初期データ（今日の日付をベースにサンプル生成）
         const todayStr = new Date().toISOString().split('T')[0];
         let appData = JSON.parse(localStorage.getItem('mondocolo_crm_data')) || {
             cards: [
-                { id: '1', name: '緑翠亭 景水', status: 'visit', category: 'pudding', teleapoDate: todayStr, nextDate: todayStr, contractDate: '', notes: '本日テレアポ実施、即日初回訪問アポ獲得！プリンの試食提案を実施。' }
+                { id: '1', name: '緑翠亭 景水', status: 'visit', category: 'pudding', teleapoDate: todayStr, nextTeleapoDate: '', nextDate: todayStr, contractDate: '', notes: '本日テレアポ実施、即日初回訪問アポ獲得！プリンの試食提案を実施。' }
             ]
         };
 
@@ -174,6 +179,9 @@
                     cardEl.onclick = () => openEditModal(card.id);
 
                     let dateBadges = '';
+                    if(card.nextTeleapoDate) {
+                        dateBadges += `<div class="mt-1 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1 py-0.5 rounded inline-block mr-1">📞 再電: ${card.nextTeleapoDate}</div>`;
+                    }
                     if(card.nextDate) {
                         dateBadges += `<div class="mt-1 text-[9px] font-bold text-blue-600 bg-white/90 border border-blue-200 px-1 py-0.5 rounded inline-block mr-1">📅 訪問: ${card.nextDate}</div>`;
                     }
@@ -211,7 +219,6 @@
                         const card = appData.cards.find(c => c.id === cardId);
                         if (card) {
                             card.status = newStatus;
-                            // 自動で成約日などを補完するおまけ機能
                             if(newStatus === 'contract' && !card.contractDate) {
                                 card.contractDate = new Date().toISOString().split('T')[0];
                             }
@@ -253,13 +260,16 @@
                 const listContainer = document.createElement('div');
                 listContainer.className = 'space-y-0.5 overflow-y-auto flex-1 max-h-[50px]';
 
-                // この日に該当するイベントを全スキャン
                 appData.cards.forEach(c => {
                     if (currentFilter !== 'ALL' && c.category !== currentFilter) return;
 
-                    // 📞 テレアポ日
+                    // 📞 テレアポ日（過去の実績）
                     if(c.teleapoDate === dayStr) {
                         createBadge(listContainer, `📞 ${c.name}`, 'bg-amber-400 text-white', c.id);
+                    }
+                    // 📞 次回テレアポ日（未来のタスク）★追加
+                    if(c.nextTeleapoDate === dayStr) {
+                        createBadge(listContainer, `📞 [再] ${c.name}`, 'bg-amber-500 text-white border border-amber-600', c.id);
                     }
                     // 📅 訪問予定日
                     if(c.nextDate === dayStr) {
@@ -293,6 +303,7 @@
             document.getElementById('editName').value = '';
             document.getElementById('editCategory').value = 'pudding';
             document.getElementById('editTeleapoDate').value = '';
+            document.getElementById('editNextTeleapoDate').value = '';
             document.getElementById('editNextDate').value = '';
             document.getElementById('editContractDate').value = '';
             document.getElementById('editNotes').value = '';
@@ -308,6 +319,7 @@
             document.getElementById('editName').value = card.name;
             document.getElementById('editCategory').value = card.category;
             document.getElementById('editTeleapoDate').value = card.teleapoDate || '';
+            document.getElementById('editNextTeleapoDate').value = card.nextTeleapoDate || '';
             document.getElementById('editNextDate').value = card.nextDate || '';
             document.getElementById('editContractDate').value = card.contractDate || '';
             document.getElementById('editNotes').value = card.notes || '';
@@ -323,6 +335,7 @@
             const name = document.getElementById('editName').value.trim();
             const category = document.getElementById('editCategory').value;
             const teleapoDate = document.getElementById('editTeleapoDate').value;
+            const nextTeleapoDate = document.getElementById('editNextTeleapoDate').value;
             const nextDate = document.getElementById('editNextDate').value;
             const contractDate = document.getElementById('editContractDate').value;
             const notes = document.getElementById('editNotes').value;
@@ -339,6 +352,7 @@
                     status: 'teleapo',
                     category: category,
                     teleapoDate: teleapoDate,
+                    nextTeleapoDate: nextTeleapoDate,
                     nextDate: nextDate,
                     contractDate: contractDate,
                     notes: notes
@@ -350,6 +364,7 @@
                     card.name = name;
                     card.category = category;
                     card.teleapoDate = teleapoDate;
+                    card.nextTeleapoDate = nextTeleapoDate;
                     card.nextDate = nextDate;
                     card.contractDate = contractDate;
                     card.notes = notes;
