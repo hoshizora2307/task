@@ -254,9 +254,39 @@
   .toast.error{ background:var(--red-600); }
 
   .empty-hint{ font-size:.7rem; color:var(--slate-400); text-align:center; padding:16px 4px; }
+
+  /* 流れ星エフェクト（画面全体・固定表示） */
+  .shooting-star-layer{
+    position:fixed; inset:0; pointer-events:none; z-index:60; overflow:hidden;
+  }
+  .shooting-star{
+    position:absolute; top:0; left:0; width:2px; height:2px; border-radius:50%;
+    background:#60a5fa;
+    box-shadow:0 0 5px 1px rgba(96,165,250,.85), 0 0 10px 2px rgba(96,165,250,.35);
+    opacity:0;
+    animation-name:shootingStarMove;
+    animation-timing-function:linear;
+    animation-iteration-count:infinite;
+  }
+  .shooting-star::before{
+    content:""; position:absolute; top:50%; right:0; width:80px; height:1.5px; transform:translateY(-50%);
+    background:linear-gradient(90deg, rgba(96,165,250,.75), rgba(96,165,250,0));
+  }
+  @keyframes shootingStarMove{
+    0%{ opacity:0; transform:translate(0,0); }
+    3%{ opacity:1; }
+    35%{ opacity:1; }
+    45%{ opacity:0; }
+    100%{ opacity:0; transform:translate(-420px, 260px); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .shooting-star-layer{ display:none; }
+  }
 </style>
 </head>
 <body>
+
+<div class="shooting-star-layer" id="shootingStarLayer"></div>
 
 <header>
   <div class="header-title">
@@ -1100,8 +1130,40 @@
     allBtn.addEventListener('click', () => { currentFilter = 'ALL'; renderFilterChips(); renderBoard(); });
   }
 
+  // ---- 流れ星エフェクト ----
+  function initShootingStars(){
+    const layer = document.getElementById('shootingStarLayer');
+    if (!layer) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const STAR_COUNT = 6; // 同時に存在する流れ星の数（控えめな頻度）
+
+    function spawnStar(){
+      const star = document.createElement('div');
+      star.className = 'shooting-star';
+
+      const startTop = Math.random() * 60; // 画面上部60%の範囲から出現
+      const startLeft = 60 + Math.random() * 40; // 右側寄りから出現
+      const duration = 3 + Math.random() * 3.5; // 3〜6.5秒で流れる
+      const delay = Math.random() * 8; // 出現までのランダムな間隔
+      const size = 1.5 + Math.random() * 1.5;
+
+      star.style.top = startTop + 'vh';
+      star.style.left = startLeft + 'vw';
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.animationDuration = duration + 's';
+      star.style.animationDelay = delay + 's';
+
+      layer.appendChild(star);
+    }
+
+    for (let i = 0; i < STAR_COUNT; i++) spawnStar();
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     bindUI();
+    initShootingStars();
     supabaseReady = tryInitSupabase();
     await refreshAll();
     initDragAndDrop();
