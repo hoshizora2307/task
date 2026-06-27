@@ -3,52 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>営業進捗管理アプリ</title>
+    <title>営業進捗・案件管理アプリ</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         .ghost { opacity: 0.4; background: #e2e8f0; }
+        /* カレンダーのレスポンシブ調整 */
+        .calendar-grid div { min-height: 50px; }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 font-sans flex flex-col">
 
-    <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center shrink-0">
-        <h1 class="text-xl font-bold">🏢 営業進捗管理ボード</h1>
-        <button onclick="openAddModal()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-50 transition active:scale-95">
+    <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0">
+        <h1 class="text-xl font-bold">🏢 営業進捗 ＆ カレンダー管理</h1>
+        <button onclick="openAddModal()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-50 transition active:scale-95 w-full sm:w-auto">
             + 取引先を追加
         </button>
     </header>
 
-    <main class="p-4 md:p-6 overflow-x-auto flex gap-4 items-start flex-1" style="min-height: calc(100vh - 120px);">
+    <div class="bg-white p-4 shadow-sm border-b flex flex-wrap items-center gap-2 shrink-0">
+        <span class="text-xs font-bold text-slate-500 mr-2">案件で絞り込み:</span>
+        <button onclick="filterCategory('ALL')" id="btn-filter-ALL" class="px-3 py-1.5 rounded-full text-xs font-bold bg-blue-600 text-white shadow">すべて表示</button>
+        <button onclick="filterCategory('pudding')" id="btn-filter-pudding" class="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">🍮 ウェルカムプリン</button>
+        <button onclick="filterCategory('star')" id="btn-filter-star" class="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">✨ 星空鑑賞会</button>
+        <button onclick="filterCategory('other')" id="btn-filter-other" class="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">📁 その他</button>
+    </div>
+
+    <div class="flex-1 flex flex-col lg:flex-row p-4 md:p-6 gap-6 items-start overflow-x-auto">
         
-        <div class="bg-slate-200 p-3 rounded-xl w-80 shrink-0 shadow-sm flex flex-col max-h-[80vh]">
-            <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1">📞 テレアポ <span class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
-            <div id="teleapo" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
+        <div class="flex gap-4 items-start flex-1 min-w-[1000px] lg:min-w-0">
+            <div class="bg-slate-200 p-3 rounded-xl w-64 shrink-0 shadow-sm flex flex-col max-h-[75vh]">
+                <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1 text-sm">📞 テレアポ <span class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
+                <div id="teleapo" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
+            </div>
+
+            <div class="bg-slate-200 p-3 rounded-xl w-64 shrink-0 shadow-sm flex flex-col max-h-[75vh]">
+                <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1 text-sm">🤝 初回訪問 <span class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
+                <div id="visit" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
+            </div>
+
+            <div class="bg-slate-200 p-3 rounded-xl w-64 shrink-0 shadow-sm flex flex-col max-h-[75vh]">
+                <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1 text-sm">📄 提案・見積 <span class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
+                <div id="proposal" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
+            </div>
+
+            <div class="bg-slate-200 p-3 rounded-xl w-64 shrink-0 shadow-sm flex flex-col max-h-[75vh]">
+                <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1 text-sm">🎉 成約 <span class="bg-emerald-200 text-emerald-800 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
+                <div id="contract" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
+            </div>
         </div>
 
-        <div class="bg-slate-200 p-3 rounded-xl w-80 shrink-0 shadow-sm flex flex-col max-h-[80vh]">
-            <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1">🤝 初回訪問 <span class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
-            <div id="visit" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
+        <div class="w-full lg:w-96 bg-white p-4 rounded-xl shadow-sm border border-slate-200 shrink-0">
+            <h2 id="calendarMonthTitle" class="font-bold text-slate-800 text-lg mb-3 flex justify-between items-center">
+                📅 訪問スケジュール
+            </h2>
+            <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-500 mb-2 border-b pb-1">
+                <div class="text-red-500">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div class="text-blue-500">土</div>
+            </div>
+            <div id="calendarGrid" class="grid grid-cols-7 gap-1 calendar-grid text-xs"></div>
         </div>
 
-        <div class="bg-slate-200 p-3 rounded-xl w-80 shrink-0 shadow-sm flex flex-col max-h-[80vh]">
-            <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1">📄 提案・見積 <span class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
-            <div id="proposal" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
-        </div>
-
-        <div class="bg-slate-200 p-3 rounded-xl w-80 shrink-0 shadow-sm flex flex-col max-h-[80vh]">
-            <h2 class="font-bold text-slate-700 mb-3 flex justify-between px-1">🎉 成約 <span class="bg-emerald-200 text-emerald-800 text-xs px-2 py-0.5 rounded-full card-count">0</span></h2>
-            <div id="contract" class="kanban-list flex-1 overflow-y-auto min-h-[150px] space-y-2"></div>
-        </div>
-
-    </main>
+    </div>
 
     <footer class="bg-slate-800 text-slate-400 text-center py-3 text-xs shrink-0">
         &copy; 2026 株式会社MONDOCOLO All Rights Reserved.
     </footer>
 
     <div id="modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
             <h3 id="modalTitle" class="text-xl font-bold border-b pb-3 mb-4 text-slate-800">取引先詳細</h3>
             <input type="hidden" id="currentCardId">
             
@@ -56,6 +78,14 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1">取引先名</label>
                     <input type="text" id="editName" class="w-full border rounded-lg p-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">案件カテゴリー</label>
+                    <select id="editCategory" class="w-full border rounded-lg p-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                        <option value="pudding">🍮 ウェルカムプリン導入案件</option>
+                        <option value="star">✨ 星空鑑賞会案件</option>
+                        <option value="other">📁 その他（一般業務など）</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1">次に行く日（予定日）</label>
@@ -78,10 +108,22 @@
     </div>
 
     <script>
-        let appData = JSON.parse(localStorage.getItem('my_crm_data')) || {
+        // 現在の絞り込み状態 ('ALL', 'pudding', 'star', 'other')
+        let currentFilter = 'ALL';
+
+        // 初期データ（サンプル）
+        let appData = JSON.parse(localStorage.getItem('mondocolo_crm_data')) || {
             cards: [
-                { id: '1', name: '緑翠亭 景水', status: 'visit', nextDate: '2026-07-05', notes: 'テレアポにてアポ獲得。現在のシステムに不満ありとのこと。次回提案書を持参。' }
+                { id: '1', name: '緑翠亭 景水', status: 'visit', category: 'pudding', nextDate: new Date().toISOString().split('T')[0], notes: 'テレアポにてアポ獲得。ウェルカムプリンの試食提案を行う。' },
+                { id: '2', name: '星の子ホテル', status: 'teleapo', category: 'star', nextDate: '', notes: '星空鑑賞会イベントの企画書送付済み。追客の連絡を入れる。' }
             ]
+        };
+
+        // カテゴリーごとのデザイン設定
+        const catConfig = {
+            pudding: { label: 'プリン', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-800', badge: 'bg-amber-100 text-amber-900' },
+            star: { label: '星空', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-800', badge: 'bg-purple-100 text-purple-900' },
+            other: { label: 'その他', bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-700', badge: 'bg-slate-200 text-slate-800' }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -89,30 +131,57 @@
             initDragAndDrop();
         });
 
+        // 絞り込み切り替えボタン
+        function filterCategory(cat) {
+            currentFilter = cat;
+            // ボタンの見た目更新
+            ['ALL', 'pudding', 'star', 'other'].forEach(c => {
+                const btn = document.getElementById(`btn-filter-${c}`);
+                if(c === cat) {
+                    btn.className = "px-3 py-1.5 rounded-full text-xs font-bold bg-blue-600 text-white shadow";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200";
+                }
+            });
+            renderBoard();
+        }
+
+        // メイン描画（ボード ＆ カレンダー）
         function renderBoard() {
             const lists = { teleapo: [], visit: [], proposal: [], contract: [] };
             
+            // データの仕分け
             appData.cards.forEach(card => {
-                if (lists[card.status]) lists[card.status].push(card);
+                if (lists[card.status]) {
+                    // フィルター条件に合致するものだけ
+                    if (currentFilter === 'ALL' || card.category === currentFilter) {
+                        lists[card.status].push(card);
+                    }
+                }
             });
 
+            // 各列の描画
             Object.keys(lists).forEach(status => {
                 const listEl = document.getElementById(status);
                 listEl.innerHTML = '';
                 
                 lists[status].forEach(card => {
+                    const cfg = catConfig[card.category] || catConfig.other;
                     const cardEl = document.createElement('div');
-                    cardEl.className = 'bg-white p-3 rounded-xl shadow-sm border border-slate-200 cursor-grab active:cursor-grabbing hover:border-blue-400 transition relative group';
+                    cardEl.className = `${cfg.bg} ${cfg.border} border p-3 rounded-xl shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition relative`;
                     cardEl.setAttribute('data-id', card.id);
                     cardEl.onclick = () => openEditModal(card.id);
 
                     let dateBadge = '';
                     if(card.nextDate) {
-                        dateBadge = `<div class="mt-2 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block">📅 次回: ${card.nextDate}</div>`;
+                        dateBadge = `<div class="mt-2 text-[10px] font-bold text-blue-600 bg-white/80 border border-blue-200 px-1.5 py-0.5 rounded inline-block">📅 次回: ${card.nextDate}</div>`;
                     }
 
                     cardEl.innerHTML = `
-                        <div class="font-bold text-slate-800 pr-4">${card.name}</div>
+                        <div class="flex justify-between items-start gap-1">
+                            <div class="font-bold text-slate-800 text-sm">${card.name}</div>
+                            <span class="${cfg.badge} text-[10px] px-1.5 py-0.5 rounded-md font-bold shrink-0">${cfg.label}</span>
+                        </div>
                         <p class="text-xs text-slate-500 mt-1 line-clamp-2">${card.notes || 'メモなし'}</p>
                         ${dateBadge}
                     `;
@@ -122,12 +191,13 @@
                 listEl.parentElement.querySelector('.card-count').innerText = lists[status].length;
             });
 
-            localStorage.setItem('my_crm_data', JSON.stringify(appData));
+            renderCalendar();
+            localStorage.setItem('mondocolo_crm_data', JSON.stringify(appData));
         }
 
+        // ドラッグ＆ドロップ設定
         function initDragAndDrop() {
-            const columns = ['teleapo', 'visit', 'proposal', 'contract'];
-            columns.forEach(id => {
+            ['teleapo', 'visit', 'proposal', 'contract'].forEach(id => {
                 Sortable.create(document.getElementById(id), {
                     group: 'kanban',
                     ghostClass: 'ghost',
@@ -135,7 +205,6 @@
                     onEnd: (evt) => {
                         const cardId = evt.item.getAttribute('data-id');
                         const newStatus = evt.to.id;
-                        
                         const card = appData.cards.find(c => c.id === cardId);
                         if (card) {
                             card.status = newStatus;
@@ -146,10 +215,69 @@
             });
         }
 
+        // ミニカレンダー機能（今月固定）
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth(); // 0 = 1月
+            
+            document.getElementById('calendarMonthTitle').innerText = `📅 訪問スケジュール (${year}年${month + 1}月)`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // 空白セル埋め
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            // 日付セル生成
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const cell = document.createElement('div');
+                cell.className = 'bg-slate-50 border border-slate-100 p-1 rounded min-h-[60px] flex flex-col justify-between overflow-hidden';
+                
+                // 日付の数字
+                const num = document.createElement('span');
+                num.className = 'font-bold text-slate-400 block text-[10px]';
+                num.innerText = day;
+                cell.appendChild(num);
+
+                // この日の予定（取引先）を探す
+                const todayCards = appData.cards.filter(c => c.nextDate === dayStr);
+                if(todayCards.length > 0) {
+                    const listContainer = document.createElement('div');
+                    listContainer.className = 'space-y-0.5 mt-1 overflow-y-auto max-h-[40px]';
+                    
+                    todayCards.forEach(c => {
+                        const cfg = catConfig[c.category] || catConfig.other;
+                        const item = document.createElement('div');
+                        item.className = `${cfg.badge} text-[9px] px-1 rounded truncate font-bold cursor-pointer`;
+                        item.innerText = c.name;
+                        item.onclick = (e) => {
+                            e.stopPropagation(); // カレンダーセルのクリックイベント発火を防ぐ
+                            openEditModal(c.id);
+                        };
+                        listContainer.appendChild(item);
+                    });
+                    cell.appendChild(listContainer);
+                    cell.className = 'bg-blue-50/50 border border-blue-100 p-1 rounded min-h-[60px] flex flex-col justify-between overflow-hidden';
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        // モーダル処理
         function openAddModal() {
             document.getElementById('currentCardId').value = 'NEW';
             document.getElementById('modalTitle').innerText = '➕ 新しい取引先を追加';
             document.getElementById('editName').value = '';
+            document.getElementById('editCategory').value = 'pudding';
             document.getElementById('editNextDate').value = '';
             document.getElementById('editNotes').value = '';
             document.getElementById('modal').classList.remove('hidden');
@@ -162,6 +290,7 @@
             document.getElementById('currentCardId').value = card.id;
             document.getElementById('modalTitle').innerText = '🔍 取引先の詳細・編集';
             document.getElementById('editName').value = card.name;
+            document.getElementById('editCategory').value = card.category;
             document.getElementById('editNextDate').value = card.nextDate || '';
             document.getElementById('editNotes').value = card.notes || '';
             document.getElementById('modal').classList.remove('hidden');
@@ -174,6 +303,7 @@
         function saveCardDetails() {
             const id = document.getElementById('currentCardId').value;
             const name = document.getElementById('editName').value.trim();
+            const category = document.getElementById('editCategory').value;
             const nextDate = document.getElementById('editNextDate').value;
             const notes = document.getElementById('editNotes').value;
 
@@ -187,6 +317,7 @@
                     id: Date.now().toString(),
                     name: name,
                     status: 'teleapo',
+                    category: category,
                     nextDate: nextDate,
                     notes: notes
                 };
@@ -195,6 +326,7 @@
                 const card = appData.cards.find(c => c.id === id);
                 if (card) {
                     card.name = name;
+                    card.category = category;
                     card.nextDate = nextDate;
                     card.notes = notes;
                 }
